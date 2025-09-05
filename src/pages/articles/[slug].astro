@@ -1,0 +1,47 @@
+---
+export async function getStaticPaths() {
+  const modules = import.meta.glob('../../content/articles/*.md', { eager: true });
+  return Object.values(modules)
+    .map((m: any) => {
+      const fm = m.frontmatter || {};
+      const permalink = fm.permalink || '';
+      if (!permalink.startsWith('/articles/')) return null;
+      const slug = permalink.replace(/^\/articles\//, '');
+      return { params: { slug }, props: { data: fm, Content: m.Content } };
+    })
+    .filter(Boolean) as any[];
+}
+
+const { data, Content } = Astro.props as { data: any; Content: any };
+---
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>{data.title} — Articles</title>
+    <meta name="description" content={data.summary} />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+  <body style="background:#D9D9D9; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:0;">
+    <div style="max-width:860px;margin:0 auto;padding:24px;">
+      <header><a href="/" style="text-decoration:none;color:inherit"><h1 style="margin:0;">Articles</h1></a></header>
+
+      <article style="margin-top:16px;background:#fff;border:1px solid #eaeaea;border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.04);">
+        <h2 style="margin:0 0 6px 0;">{data.title}</h2>
+        <div style="opacity:.8;font-size:14px;margin-bottom:12px;">
+          {new Date(data.date).toLocaleDateString('fr-FR')} · {data.author}
+        </div>
+
+        {data.imageUrl && (
+          <figure style="margin:16px 0;">
+            <img src={data.imageUrl} alt={data.title} style="display:block;width:100%;height:auto;max-height:520px;object-fit:contain;background:#f6f6f6;border-radius:10px;" />
+            {data.imageCredit && <figcaption style="font-size:12px;opacity:.7;margin-top:6px;">{data.imageCredit}</figcaption>}
+          </figure>
+        )}
+
+        <Content />
+      </article>
+
+      <footer style="opacity:.6;font-size:12px;margin-top:24px;">© {new Date().getFullYear()} — Articles</footer>
+    </div>
+  </body>
+</html>
