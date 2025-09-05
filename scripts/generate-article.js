@@ -1,6 +1,6 @@
 // scripts/generate-article.js
 // 1 article original par jour (FR) — IA / high-tech / objets connectés / smartphones / comparatifs
-// Rédaction via OpenAI Responses API (Markdown), image via Openverse (fallback CC).
+// Rédaction via OpenAI (Responses API). Image via Openverse (CC). Dossier + .gitkeep garantis.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -11,11 +11,10 @@ import matter from "gray-matter";
 import OpenAI from "openai";
 
 /* --- CONFIG --- */
-const MODEL = process.env.OPENAI_MODEL || "gpt-4o"; // définis OPENAI_MODEL si tu veux
+const MODEL = process.env.OPENAI_MODEL || "gpt-4o";
 const OUT_DIR = path.join("src", "content", "articles");
 const OPENVERSE_PAGE_SIZE = 12;
 
-/** Flux FR/tech pour s’inspirer du sujet du jour (on ne copie pas) */
 const FEEDS_FR = [
   { name: "Frandroid",        url: "https://www.frandroid.com/feed" },
   { name: "Les Numériques",   url: "https://www.lesnumeriques.com/rss.xml" },
@@ -46,6 +45,7 @@ function yaml(frontmatter) {
     Array.isArray(v) ? `${k}: [${v.map(x=>`"${esc(x)}"`).join(", ")}]` : `${k}: "${esc(v)}"`
   ).join("\n") + "\n";
 }
+function cleanText(s=""){ return String(s).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(); }
 
 /* --- Feeds → idée de sujet --- */
 async function fetchFeed(url) {
@@ -56,8 +56,6 @@ async function fetchFeed(url) {
   const raw = channel?.item || channel?.entry || [];
   return Array.isArray(raw) ? raw : [raw];
 }
-function cleanText(s=""){ return String(s).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(); }
-
 async function getInspiration() {
   for (const f of FEEDS_FR) {
     try {
@@ -71,7 +69,6 @@ async function getInspiration() {
         }))
         .filter((x) => x.title && x.link);
       if (items.length) {
-        // item le plus récent
         items.sort((a,b)=>new Date(b.dateISO)-new Date(a.dateISO));
         return items[0];
       }
@@ -79,11 +76,10 @@ async function getInspiration() {
       console.error("Feed error:", f.name, f.url, String(e).slice(0,120));
     }
   }
-  // fallback si tous les flux tombent
   return {
     title: "Quel smartphone milieu de gamme choisir en 2025 ?",
     link: "",
-    summary: "Guide d’achat : points clés, fiches techniques à privilégier, autonomie, photo, suivi logiciel.",
+    summary: "Guide d’achat : autonomie, photo, performances, mises à jour, rapport qualité/prix.",
     source: "Sujet générique",
     dateISO: new Date().toISOString(),
   };
@@ -133,41 +129,68 @@ async function findImageOpenverse(query, avoidFP=new Set()){
   return null;
 }
 
-/* --- Rédaction via OpenAI --- */
+/* --- Rédaction via OpenAI (avec fallback local) --- */
 async function writeArticleFR(topic) {
-  const system = `Tu es journaliste tech francophone. Écris un article ORIGINAL et factuel (600–900 mots) en Markdown, sur le thème high-tech/IA/objets connectés/smartphones. Structure:
-# Titre accrocheur (H1)
+  const system = `Tu es journaliste tech francophone. Écris un article ORIGINAL (600–900 mots) en Markdown, sur high-tech/IA/objets connectés/smartphones. Structure:
+# Titre (H1)
 Intro (3–4 phrases)
 ## Points clés
-• 4–6 puces concises
+• 4–6 puces
 ## Décryptage
-(paragraphes clairs)
+(paragraphes)
 ## Comparatif / “Lequel choisir ?” (si pertinent)
-• fais une mini-table en Markdown si cohérent
+(table Markdown possible)
 ## FAQ
-Q/R (2–3 items)
-Ton neutre, concret, pas de chiffres inventés. Pas de HTML, pas d'emojis.`;
-
-  const user = `Sujet à traiter (inspiration, NE PAS copier) :
+2–3 Q/R
+Ton neutre, utile, pas de chiffres inventés.`;
+  const user = `Sujet d'inspiration (NE PAS copier):
 - Titre source: ${topic.title}
-- Résumé source: ${topic.summary || "(non fourni)"} 
-- Lien éventuel: ${topic.link || "(n/a)"}
-
+- Résumé: ${topic.summary || "(n/a)"}
+- Lien: ${topic.link || "(n/a)"}
 Contraintes:
-- Français uniquement.
-- Adapte le sujet si nécessaire pour rester intemporel et utile (guide, comparatif, analyse).
-- N'invente pas de spécifications ou de benchmarks précis si tu n'es pas sûr : reste qualitatif.`;
+- Français uniquement. Pas de HTML ni d'emojis.
+- Si info incertaine: rester qualitatif, pas de specs inventées.`;
 
-  // Responses API — sortie en texte Markdown
   const resp = await client.responses.create({
     model: MODEL,
     instructions: system,
     input: user,
-  }); // https://www.npmjs.com/package/openai (Responses API, output_text)
+  });
 
   const md = (resp.output_text || "").trim();
   if (!md) throw new Error("Réponse vide du modèle.");
   return md;
+}
+
+function fallbackDraft() {
+  return `# Guide d’achat : bien choisir ses objets connectés en 2025
+
+Les objets connectés se multiplient. Voici un guide pratique pour faire un achat utile et durable.
+
+## Points clés
+- **Compatibilité** (Matter, Thread, Wi-Fi, Bluetooth)
+- **Vie privée** et traitement **local** des données
+- **Autonomie** et **mise à jour** logicielle
+- **Interopérabilité** (iOS/Android/assistant vocal)
+- **Écosystème** et support constructeur
+
+## Décryptage
+Choisir un produit connecté commence par l’écosystème que vous utilisez au quotidien…
+(ajoute 3–4 paragraphes utiles et intemporels ici)
+
+## Comparatif : assistant vocal
+| Assistant | Forces | Faiblesses |
+|---|---|---|
+| Google | Recherche, intégrations Android | Politique produit fluctuante |
+| Alexa | Écosystème large | Confidentialité perfectible |
+| Siri | Intégration Apple | Moins flexible |
+
+## FAQ
+**Le protocole Matter change quoi ?**  
+Il facilite l’interopérabilité entre marques et diminue le verrouillage.
+
+**Faut-il un hub ?**  
+Souvent oui pour Thread/Zigbee ; cela améliore la stabilité et la portée.`;
 }
 
 /* --- Extraire le H1 comme titre --- */
@@ -178,21 +201,35 @@ function extractTitle(markdown) {
 
 /* --- MAIN --- */
 async function main(){
+  // 1) Crée le dossier + .gitkeep pour qu'il apparaisse dans le repo même s'il est vide
   fs.mkdirSync(OUT_DIR, { recursive: true });
+  const keep = path.join(OUT_DIR, ".gitkeep");
+  if (!fs.existsSync(keep)) fs.writeFileSync(keep, "");
 
+  // 2) Trouver un sujet
   const inspiration = await getInspiration();
-  const draft = await writeArticleFR(inspiration);
+
+  // 3) Rédiger (avec fallback si OpenAI échoue)
+  let draft = "";
+  try {
+    if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY manquant");
+    draft = await writeArticleFR(inspiration);
+  } catch (e) {
+    console.error("OpenAI indisponible, on bascule sur un article de secours:", e?.message || e);
+    draft = fallbackDraft();
+  }
+
   const title = extractTitle(draft) || inspiration.title || "Article high-tech";
   const date = new Date();
   const slug = `${todayYMD()}-${slugify(title, { lower: true, strict: true })}`;
-
   const target = path.join(OUT_DIR, `${slug}.md`);
+
   if (fs.existsSync(target)) {
     console.log("⏭️  Déjà présent aujourd'hui:", target);
     return;
   }
 
-  // Éviter de réutiliser une image déjà utilisée par d’anciens articles
+  // 4) Éviter de réutiliser une image déjà utilisée par d’anciens articles
   const existing = new Set();
   for (const f of fs.readdirSync(OUT_DIR)) {
     if (!f.endsWith(".md")) continue;
