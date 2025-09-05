@@ -14,15 +14,35 @@ import matter from "gray-matter";
 /* ---- CONFIG ---- */
 const ITEMS_PER_RUN = 1;                 // 1 actu par exécution
 const OPENVERSE_PAGE_SIZE = 12;          // nb max d’images candidates Openverse
-// Sources interventional / medtech (news, témoignages, publications)
+// Sources IA / gadgets / smartphones / logiciels
 const FEEDS = [
-  { name: "Interventional News", url: "https://interventionalnews.com/feed/" },
-  { name: "Cardiovascular News", url: "https://cardiovascularnews.com/feed/" },
-  { name: "Vascular News", url: "https://vascularnews.com/feed/" },
+  // — IA —
+  { name: "OpenAI Blog", url: "https://openai.com/blog/rss" },
+  { name: "Google AI Blog", url: "https://ai.googleblog.com/feeds/posts/default?alt=rss" },
+  { name: "Microsoft AI", url: "https://blogs.microsoft.com/ai/feed/" },
+  { name: "NVIDIA Blog", url: "https://blogs.nvidia.com/feed/" },
+  { name: "Hugging Face", url: "https://huggingface.co/blog/feed.xml" },
+  { name: "MIT Tech Review – AI", url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/" },
 
-  { name: "MassDevice", url: "https://www.massdevice.com/feed/" },
-  { name: "MedTech Intelligence", url: "https://medtechintelligence.com/feed/" },
-  { name: "Medical Device Network (Verdict)", url: "https://www.medicaldevice-network.com/feed/" }
+  // — Gadgets / Smartphones (FR + EN) —
+  { name: "Frandroid", url: "https://www.frandroid.com/feed" },
+  { name: "Les Numériques", url: "https://www.lesnumeriques.com/rss.xml" },
+  { name: "01net", url: "https://www.01net.com/feed/" },
+  { name: "Journal du Geek", url: "https://www.journaldugeek.com/rss/" },
+  { name: "The Verge", url: "https://www.theverge.com/rss/index.xml" },
+  { name: "Engadget", url: "https://www.engadget.com/rss.xml" },
+  { name: "GSMArena", url: "https://www.gsmarena.com/rss-news-reviews.php" },
+  { name: "Android Police", url: "https://www.androidpolice.com/rss/" },
+  { name: "XDA Developers", url: "https://www.xda-developers.com/feed/" },
+  { name: "9to5Google", url: "https://9to5google.com/feed/" },
+  { name: "9to5Mac", url: "https://9to5mac.com/feed/" },
+
+  // — Logiciels / Dev / Tech —
+  { name: "Ars Technica", url: "https://feeds.arstechnica.com/arstechnica/index" },
+  { name: "TechCrunch", url: "https://techcrunch.com/feed/" },
+  { name: "GitHub Changelog", url: "https://github.blog/changelog/feed/" },
+  { name: "Hacker News", url: "https://news.ycombinator.com/rss" },
+  { name: "The Register", url: "https://www.theregister.com/headlines.atom" },
 ];
 
 /* ---- Utils ---- */
