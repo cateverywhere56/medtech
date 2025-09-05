@@ -14,13 +14,34 @@ function hostOf(url: string) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
 }
 const brandMap: Record<string, string> = {
-  'francetvinfo.fr': 'Franceinfo',
-  'france24.com': 'France 24',
-  'rfi.fr': 'RFI',
-  '20minutes.fr': '20 Minutes',
-  'ouest-france.fr': 'Ouest-France',
-  'lemonde.fr': 'Le Monde',
+  // IA
+  'openai.com': 'OpenAI',
+  'ai.googleblog.com': 'Google AI',
+  'blogs.microsoft.com': 'Microsoft AI',
+  'blogs.nvidia.com': 'NVIDIA',
+  'huggingface.co': 'Hugging Face',
+  'technologyreview.com': 'MIT Tech Review',
+  // FR gadgets/smartphones
+  'frandroid.com': 'Frandroid',
+  'lesnumeriques.com': 'Les Numériques',
+  '01net.com': '01net',
+  'journaldugeek.com': 'Journal du Geek',
+  // EN gadgets/smartphones
+  'theverge.com': 'The Verge',
+  'engadget.com': 'Engadget',
+  'gsmarena.com': 'GSMArena',
+  'androidpolice.com': 'Android Police',
+  'xda-developers.com': 'XDA Developers',
+  '9to5google.com': '9to5Google',
+  '9to5mac.com': '9to5Mac',
+  // logiciels/dev
+  'arstechnica.com': 'Ars Technica',
+  'techcrunch.com': 'TechCrunch',
+  'github.blog': 'GitHub',
+  'news.ycombinator.com': 'Hacker News',
+  'theregister.com': 'The Register',
 };
+
 function brandOf(url: string) {
   const h = hostOf(url);
   return brandMap[h] || h || 'Source';
