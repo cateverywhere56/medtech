@@ -1,20 +1,33 @@
 ---
 /** Accueil : Articles (internes) + Actus (externes) */
-const articlesMod = import.meta.glob('../content/articles/*.md', { eager: true });
-const articles = Object.values(articlesMod)
-  .map((m: any) => m.frontmatter)
-  .filter((fm: any) => fm && fm.title && fm.permalink)
-  .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+import { getCollection } from "astro:content";
 
-const newsMod = import.meta.glob('../content/papers/*.md', { eager: true });
+// Récupère les articles via la collection déclarée dans src/content/config.ts
+let articles = await getCollection("articles");
+articles = articles
+  .filter((a) => a.data && a.data.title && a.data.permalink)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Actus externes : tu peux garder import.meta.glob
+const newsMod = import.meta.glob("../content/papers/*.md", { eager: true });
 const news = Object.values(newsMod)
   .map((m: any) => m.frontmatter)
   .filter((fm: any) => fm && fm.title && fm.sourceUrl)
   .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-function hostOf(url: string){ try { return new URL(url).hostname.replace(/^www\./,''); } catch { return ''; } }
-function faviconOf(url: string){ const h = hostOf(url); return h ? `https://www.google.com/s2/favicons?domain=${h}&sz=64` : ''; }
+function hostOf(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+function faviconOf(url: string) {
+  const h = hostOf(url);
+  return h ? `https://www.google.com/s2/favicons?domain=${h}&sz=64` : "";
+}
 ---
+
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
@@ -46,11 +59,14 @@ function faviconOf(url: string){ const h = hostOf(url); return h ? `https://www.
       ) : (
         <main class="cards">
           {articles.map((p: any) => (
-            <a href={p.permalink} class="card">
-              {p.imageUrl && <img src={p.imageUrl} alt={p.title} class="thumb" loading="lazy" />}
-              <h3 style="margin:0 0 6px 0; line-height:1.25;">{p.title}</h3>
-              <div style="opacity:.7; font-size:14px; margin-bottom:8px;">{new Date(p.date).toLocaleDateString('fr-FR')} · {p.author}</div>
-              {p.summary && <p style="margin-top:0; opacity:.9;">{p.summary}</p>}
+            <a href={p.data.permalink} class="card">
+              {p.data.imageUrl && <img src={p.data.imageUrl} alt={p.data.title} class="thumb" loading="lazy" />}
+              <h3 style="margin:0 0 6px 0; line-height:1.25;">{p.data.title}</h3>
+              <div style="opacity:.7; font-size:14px; margin-bottom:8px;">
+                {p.data.date.toLocaleDateString('fr-FR')}
+                {p.data.author && <> · {p.data.author}</>}
+              </div>
+              {p.data.summary && <p style="margin-top:0; opacity:.9;">{p.data.summary}</p>}
             </a>
           ))}
         </main>
@@ -65,7 +81,9 @@ function faviconOf(url: string){ const h = hostOf(url); return h ? `https://www.
             <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" class="card">
               {p.imageUrl && <img src={p.imageUrl} alt={p.title} class="thumb" loading="lazy" />}
               <h3 style="margin:0 0 6px 0; line-height:1.25;">{p.title}</h3>
-              <div style="opacity:.7; font-size:14px; margin-bottom:8px;">{new Date(p.date).toLocaleDateString('fr-FR')}</div>
+              <div style="opacity:.7; font-size:14px; margin-bottom:8px;">
+                {new Date(p.date).toLocaleDateString('fr-FR')}
+              </div>
               {p.summary && <p style="margin-top:0; opacity:.9;">{p.summary}</p>}
               <div style="display:flex;align-items:center;gap:8px;opacity:.9;font-size:13px;margin-top:12px;">
                 {p.sourceUrl && faviconOf(p.sourceUrl) && <img src={faviconOf(p.sourceUrl)} width="16" height="16" style="border-radius:4px;" alt="" />}
