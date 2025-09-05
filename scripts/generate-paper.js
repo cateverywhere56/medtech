@@ -14,13 +14,16 @@ import matter from "gray-matter";
 /* ---- CONFIG ---- */
 const ITEMS_PER_RUN = 1;                 // 1 actu par exécution
 const OPENVERSE_PAGE_SIZE = 12;          // nb max d’images candidates Openverse
+// Sources interventional / medtech (news, témoignages, publications)
 const FEEDS = [
-  { name: "Franceinfo",    url: "https://www.francetvinfo.fr/titres.rss" },
-  { name: "France 24",     url: "https://www.france24.com/fr/rss" },
-  { name: "RFI",           url: "https://www.rfi.fr/fr/france/rss" },
-  { name: "20 Minutes",    url: "http://www.20minutes.fr/rss/une.xml" },
-  { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss-en-continu.xml" },
-  { name: "Le Monde",      url: "https://www.lemonde.fr/rss/une.xml" },
+  { name: "Interventional News", url: "https://interventionalnews.com/feed/" },
+  { name: "Cardiovascular News", url: "https://cardiovascularnews.com/feed/" },
+  { name: "Vascular News", url: "https://vascularnews.com/feed/" },
+
+  { name: "MassDevice", url: "https://www.massdevice.com/feed/" },
+  { name: "MedTech Intelligence", url: "https://medtechintelligence.com/feed/" },
+  { name: "Medical Device Network (Verdict)", url: "https://www.medicaldevice-network.com/feed/" },
+  { name: "Medical Device News Magazine", url: "https://infomeddnews.com/feed/" }
 ];
 
 /* ---- Utils ---- */
