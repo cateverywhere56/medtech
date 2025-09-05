@@ -22,8 +22,7 @@ const FEEDS = [
 
   { name: "MassDevice", url: "https://www.massdevice.com/feed/" },
   { name: "MedTech Intelligence", url: "https://medtechintelligence.com/feed/" },
-  { name: "Medical Device Network (Verdict)", url: "https://www.medicaldevice-network.com/feed/" },
-  { name: "Medical Device News Magazine", url: "https://infomeddnews.com/feed/" }
+  { name: "Medical Device Network (Verdict)", url: "https://www.medicaldevice-network.com/feed/" }
 ];
 
 /* ---- Utils ---- */
